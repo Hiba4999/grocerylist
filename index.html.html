@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <title>Grocery list</title>
+</head>
+
+   <style>
+    body{
+        font-family: Arial, Helvetica, sans-serif;
+         background-color: #f3f6fd;
+         display: flex;
+         justify-content: center;
+    }
+
+    .container {
+        width: 380px;
+        background: #ffffff;
+        border-radius: 10px;
+        padding: 20px;
+        width: 400px;
+        box-shadow: 0px 4px 18px rgba(0,0,0,0.12);
+    }
+    #heading{
+        text-align: center;
+    }
+     #item_name ,#item_cost,#search{
+         width:90%;
+         padding:10px;
+         margin: 10px 6px;
+          border-radius: 8px;
+        border: 1px solid #c9d2ea;
+        font-size: 14px;
+     }
+       #button,#sortoptions{
+             width:95%;
+         padding:10px;
+         margin: 10px 6px;
+          border-radius: 8px;
+        border: 1px solid #c9d2ea;
+        font-size: 14px;
+       }
+       #button{
+        background: #2a5de8;
+        color: #fff;
+        cursor: pointer;
+    }
+    #button:hover {
+        background: NAVY;
+    }
+    .item {
+        background: #eef2ff;
+        padding: 10px;
+        border-radius: 8px;
+        margin-top: 10px;
+        display: flex;
+        justify-content: space-between;
+    }
+    .bought{
+        background-color:lemonchiffon;
+    }
+     .actions button {
+        background: red;
+        padding: 7px 20px;
+        font-size: 12px;
+        border:lightgray;
+    }
+    .actions button:hover {
+        background: #d83636;
+    }
+    .small-btn i{
+        color:whitesmoke;
+        font-size: small;
+    }
+   </style>
+
+<body>
+    <div class="container">
+        <h1 id="heading">Grocery List <i class="fa-solid fa-cart-shopping"></i></h1>
+        <input id="item_name" type="text" placeholder="Enter your grocery item name">
+        <input id="item_cost" type="text" placeholder="Enter the price">
+        <button id="button" onclick="additem()">Add Item</button>
+
+         <input id="search" type="text" placeholder="Search items..." onkeyup="sortinglist()">
+
+        <select id="sortoptions" onchange="sortinglist()">
+              <option value="default">Sort By</option>
+              <option value="name">Name A → Z</option>
+              <option value="price">Price Low → High</option>
+        </select>
+           <div id="itemlist"></div>
+    </div>
+
+    <script>
+        let grocerylist=[];
+        function savelist(){
+                     localStorage.setItem("grocerydata", JSON.stringify(grocerylist));
+              }
+              window.onload=function(){
+                let saved=localStorage.getItem("grocerydata");
+                if(saved){
+                    grocerylist=JSON.parse(saved);
+                      }
+                       sortinglist();
+                
+              }
+        function additem(){
+            let name=document.getElementById("item_name").value.trim();
+            let price=document.getElementById("item_cost").value.trim();
+            if(!name){
+                return alert("Enter the item name");
+            }
+            if(!price){
+                return alert("Please mention the price")
+            }
+            grocerylist.push({name,price,bought:false});
+            savelist();
+            document.getElementById("item_name").value="";
+            document.getElementById("item_cost").value="";
+            sortinglist();
+        }
+
+
+        function togglebought(index){
+                grocerylist[index].bought=! grocerylist[index].bought;
+                    savelist();
+            sortinglist();
+        }
+
+          function deleteoption(index){
+            grocerylist.splice(index,1);
+                savelist();
+             sortinglist();
+          }
+
+
+          function sortinglist(){
+            
+            // search bar one and sort
+            let search=document.getElementById("search").value.toLowerCase();
+            let sort_type=document.getElementById("sortoptions").value;
+
+            let new_list=[];
+
+            // search part
+            for(let i=0;i<grocerylist.length;i++){
+                let itemname=grocerylist[i].name.toLowerCase();
+                if(itemname.includes(search)){
+                    new_list.push(grocerylist[i]);
+                }
+            }
+
+            //by name or price
+            if(sort_type==="name"){
+                new_list.sort(function(x,y){
+                return x.name.localeCompare(y.name)
+                });
+            }
+            if(sort_type==="price"){
+                new_list.sort(function(x,y){
+                    return Number(x.price)- Number(y.price);
+                });
+            }
+
+            let list=document.getElementById("itemlist");
+            list.innerHTML="";
+          for (let i = 0; i < new_list.length; i++) {
+            let boughtbool = "";
+           if (new_list[i].bought === true) {
+        boughtbool = "bought";  
+         }
+
+         let item = `<div class="item ${boughtbool}">
+        ${new_list[i].name} - Rs. ${new_list[i].price || "-"}
+        <div class="actions">
+            <button class="small-btn" onclick="togglebought(${i})"><i class="fa-solid fa-check"></i></button>
+            <button class="small-btn" onclick="deleteoption(${i})"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+         </div>`;
+
+    list.innerHTML += item;
+ }
+          
+}
+    </script>
+    
+</body>
+</html>
